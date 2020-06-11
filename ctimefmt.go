@@ -35,8 +35,9 @@ var ctimeSubstitutes map[string]string = map[string]string{
 	"%P": "pm",
 	"%M": "04",
 	"%S": "05",
-	"%L": "000",
+	"%L": "999",
 	"%f": "999999",
+	"%s": "99999999",
 	"%Z": "MST",
 	"%z": "-0700",
 	"%w": "-070000",
@@ -83,6 +84,7 @@ func init() {
 //   %S - Second as a zero-padded decimal number (00, 01, ..., 59)
 //   %L - Millisecond as a decimal number, zero-padded on the left (000, 001, ..., 999)
 //   %f - Microsecond as a decimal number, zero-padded on the left (000000, ..., 999999)
+//   %s - Nanosecond as a decimal number, zero-padded on the left (000000, ..., 999999)
 //   %z - UTC offset in the form ±HHMM[SS[.ffffff]] or empty(+0000, -0400)
 //   %Z - Timezone name or abbreviation or empty (UTC, EST, CST)
 //   %D, %x - Short MM/DD/YY date, equivalent to %m/%d/%y
