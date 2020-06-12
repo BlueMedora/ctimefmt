@@ -11,12 +11,18 @@ var dt1 time.Time = time.Date(2019, 1, 2, 15, 4, 5, 666666000, time.UTC)
 var dt2 time.Time = time.Date(2019, 1, 2, 15, 4, 5, 666000000, time.UTC)
 
 func TestFormat(t *testing.T) {
-	s := Format(format1, dt1)
+	s, err := Format(format1, dt1)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if s != value1 {
 		t.Errorf("Given: %v, expected: %v", s, value1)
 	}
 
-	s = Format(format2, dt1)
+	s, err = Format(format2, dt1)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if s != value2 {
 		t.Errorf("Given: %v, expected: %v", s, value2)
 	}
