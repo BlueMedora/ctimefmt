@@ -7,11 +7,14 @@
 package ctimefmt
 
 import (
+	"errors"
+	"fmt"
 	"regexp"
 	"time"
 )
 
-var ctimeRegexp, decimalsRegexp *regexp.Regexp
+var ctimeRegexp = regexp.MustCompile(`%.`)
+var decimalsRegexp = regexp.MustCompile(`\d`)
 
 // ctime format -> Go format conversion
 var ctimeSubstitutes map[string]string = map[string]string{
@@ -54,11 +57,7 @@ var ctimeSubstitutes map[string]string = map[string]string{
 	"%n": "\n",
 	"%t": "\t",
 	"%%": "%",
-	"%c": "Mon Jan 02 15:04:05 2006"}
-
-func init() {
-	ctimeRegexp = regexp.MustCompile(`%.`)
-	decimalsRegexp = regexp.MustCompile(`\d`)
+	"%c": "Mon Jan 02 15:04:05 2006",
 }
 
 // Format returns a textual representation of the time value formatted
@@ -96,8 +95,12 @@ func init() {
 //   %t - Horizontal-tab character ('\t')
 //   %% - A % sign
 //   %c - Date and time representation (Mon Jan 02 15:04:05 2006)
-func Format(format string, t time.Time) string {
-	return t.Format(ToNative(format))
+func Format(format string, t time.Time) (string, error) {
+	native, err := ToNative(format)
+	if err != nil {
+		return "", err
+	}
+	return t.Format(native), nil
 }
 
 // Parse parses a ctime-like formatted string (e.g. "%Y-%m-%d ...") and returns
@@ -105,23 +108,34 @@ func Format(format string, t time.Time) string {
 //
 // Refer to Format() function documentation for possible directives.
 func Parse(format, value string) (time.Time, error) {
-	return time.Parse(ToNative(format), value)
+	native, err := ToNative(format)
+	if err != nil {
+		return time.Time{}, nil
+	}
+	return time.Parse(native, value)
 }
 
 // ToNative converts ctime-like format string to Go native layout
 // (which is used by time.Time.Format() and time.Parse() functions).
-func ToNative(format string) string {
+func ToNative(format string) (string, error) {
 	if match := decimalsRegexp.FindString(format); match != "" {
-		panic("Format string should not contain decimals")
+		return "", errors.New("format string should not contain decimals")
 	}
 
+	var errs []error
 	replaceFunc := func(directive string) string {
 		if subst, ok := ctimeSubstitutes[directive]; ok {
 			return subst
 		} else {
-			panic("Unsupported ctimefmt.ToNative() directive: " + directive)
+			errs = append(errs, errors.New("unsupported ctimefmt.ToNative() directive: "+directive))
 		}
+		return ""
 	}
 
-	return ctimeRegexp.ReplaceAllStringFunc(format, replaceFunc)
+	replaced := ctimeRegexp.ReplaceAllStringFunc(format, replaceFunc)
+	if len(errs) != 0 {
+		return "", fmt.Errorf("convert to go time format: %v", errs)
+	}
+
+	return replaced, nil
 }
