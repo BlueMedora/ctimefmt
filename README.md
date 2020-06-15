@@ -6,7 +6,7 @@ strptime/strftime compatible syntax (e.g. `"%Y-%m-%d %H:%M:%S %Z"`) for Go.
 
 ## Installation
 ```sh
-go get github.com/Mottl/ctimefmt
+go get github.com/bluemedora/ctimefmt
 ```
 
 ## Example
